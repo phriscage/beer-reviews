@@ -1,0 +1,13 @@
+################################################################################
+##
+##  Purpose: Provide a api for Beer review data
+##  Email: phriscage@gmail.com
+##
+################################################################################
+version: "3.4"
+services:
+  reviews-api:
+    build:
+      context: reviews
+      dockerfile: Dockerfile
+    image: phriscage/beer-reviews-api:${TAG}

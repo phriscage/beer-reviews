@@ -1,0 +1,33 @@
+################################################################################
+##
+##  Purpose: Provide a Beer application with several microservices
+##  Email: phriscage@gmail.com
+##
+################################################################################
+version: "3.4"
+services:
+  reviews-api:
+    image: phriscage/beer-reviews-api:${TAG}
+    ports:
+      - 8080:8080
+    environment:
+      - ELASTICSEARCH_DATABASE_URI=http://reviews-db:9200
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256m
+  reviews-db:
+    image: docker.elastic.co/elasticsearch/elasticsearch:6.1.1
+    ports:
+      - 9200:9200
+      - 9300:9300
+    environment:
+      - discovery.type=single-node
+    #volumes:
+      #- ${PWD}/files:/docker-entrypoint-initdb.d/.
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256m

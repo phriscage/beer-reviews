@@ -1,0 +1,18 @@
+################################################################################
+##
+##  Purpose: Provide a api for Beer review data
+##  Email: phriscage@gmail.com
+##
+################################################################################
+version: "3.4"
+services:
+  reviews-api:
+    image: phriscage/beer-reviews-api:${TAG}
+    ports:
+      - 8080:8080
+    volumes:
+      - ${PWD}:${PWD}
+    working_dir: ${PWD}/reviews
+    entrypoint: 
+      - fresh
+      #- ${PWD}/reviews/api/main.go

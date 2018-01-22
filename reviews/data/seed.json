@@ -1,0 +1,10 @@
+{ "index" : { "_index" : "beers", "_type" : "review", "_id" : "da8d2d25-4069-478b-8737-fe2312c42352" } }
+{ "text" : "I had this with a burger. Excellent", "beer": { "id": 1 }, "reviewer": { "id": 1, "name": "chris" } }
+{ "index" : { "_index" : "beers", "_type" : "review", "_id" : "83f2bdd3-5712-4890-8b9b-13bae01c4b56" } }
+{ "text" : "This beer is my favorite!", "beer": { "id": 2 }, "reviewer": { "id": 1, "name": "chris" } }
+{ "index" : { "_index" : "beers", "_type" : "review", "_id" : "b84a5e46-61de-4b23-b318-8984c3852d4c" } }
+{ "text" : "I am not found of the after taste of this one.", "beer": { "id": 3 }, "reviewer": { "id": 1, "name": "chris" } }
+{ "index" : { "_index" : "beers", "_type" : "review", "_id" : "7baac641-9508-4a54-8809-9b6f5cd42d06" } }
+{ "text" : "This is a great tasting beer with extra hops!", "beer": { "id": 1 }, "reviewer": { "id": 2, "name": "sally" } }
+{ "index" : { "_index" : "beers", "_type" : "review", "_id" : "f4f46887-c0b8-4ee7-9560-3692580db332" } }
+{ "text" : "This one is not so good. I have had better.", "beer": { "id": 2 }, "reviewer": { "id": 2, "name": "sally" } }
