@@ -18,25 +18,24 @@ WORKDIR /app
 RUN apk --no-cache add --virtual git && \
         rm -rf /var/cache/apk/*
 
+# Pull the Go dependencies
+RUN go get github.com/pilu/fresh && \
+        go get -d -v \
+        # specify individually to avoid rebuilding container layer during dev
+        github.com/olivere/elastic \
+        github.com/gorilla/handlers \
+        github.com/sirupsen/logrus \
+        github.com/gorilla/mux
+
 # Add the sample data
 COPY data /app/data
 
 # Add the application
 COPY *.go ./
 
-# Pull the Go dependencies
-RUN go get -d -v 
-
 # Build the package
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o /app/main .
 
 EXPOSE 8080
 
-ENTRYPOINT ["/app/main"]
-
-
-## final stage
-FROM alpine:3.7
-WORKDIR /app
-COPY --from=build-env /app/main /app/
 ENTRYPOINT ["/app/main"]

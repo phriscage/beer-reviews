@@ -7,6 +7,9 @@
 version: "3.4"
 services:
   reviews-api:
+    build:
+      context: reviews
+      dockerfile: Dockerfile.dev
     image: phriscage/beer-reviews-api:${TAG}
     ports:
       - 8080:8080
