@@ -12,6 +12,18 @@ import (
 	"time"
 )
 
+const (
+	elasticBeerIndex = "beers"
+	elasticBeerType  = "review"
+)
+
+var (
+	elasticUrl = os.Getenv("ELASTICSEARCH_DATABASE_URI")
+	// Starting with elastic.v5, you must pass a context to execute each service
+	ctx    = context.Background()
+	client *elastic.Client
+)
+
 // Init
 func init() {
 	// Log as JSON instead of the default ASCII formatter.
@@ -29,17 +41,15 @@ func init() {
 func main() {
 
 	log.Debugf("ELASTICSEARCH_DATABASE_URI: %s", os.Getenv("ELASTICSEARCH_DATABASE_URI"))
-	elasticUrl := os.Getenv("ELASTICSEARCH_DATABASE_URI")
 	if elasticUrl == "" {
 		elasticUrl = "http://localhost:9200"
 	}
-	elasticBeerIndex := "beers"
 
 	// Starting with elastic.v5, you must pass a context to execute each service
-	ctx := context.Background()
+	//ctx := context.Background()
 
 	// Obtain a client and connect to the default Elasticsearch installation
-	client, err := elastic.NewClient(
+	c, err := elastic.NewClient(
 		elastic.SetSniff(false),
 		elastic.SetURL(elasticUrl),
 		elastic.SetHealthcheckTimeoutStartup(10*time.Second),
@@ -49,6 +59,8 @@ func main() {
 		log.Fatal(err)
 		panic(err)
 	}
+	defer c.Stop()
+	client = c
 
 	// Ping the Elasticsearch server to get e.g. the version number
 	info, code, err := client.Ping(elasticUrl).Do(ctx)
@@ -68,7 +80,7 @@ func main() {
 	}
 	log.Infof("Elasticsearch version %s\n", esversion)
 
-	exists, err := client.IndexExists(elasticBeerIndex).Do(context.Background())
+	exists, err := client.IndexExists(elasticBeerIndex).Do(ctx)
 	if err != nil {
 		// Handle error
 		log.Fatal(err)
@@ -89,14 +101,13 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/sample", SampleHandler).Methods("GET")
 	router.HandleFunc("/sample", MethodNotAllowedHandler)
+	router.HandleFunc("/reviews", ReviewsHandler).Methods("GET")
+	router.HandleFunc("/reviews", MethodNotAllowedHandler)
+	router.HandleFunc("/reviews/{id}", ReviewsIdHandler).Methods("GET")
+	router.HandleFunc("/reviews/{id}", MethodNotAllowedHandler)
 	router.HandleFunc("/hello", HelloHandler).Methods("GET")
 	router.HandleFunc("/hello", MethodNotAllowedHandler)
-	router.HandleFunc("/hello/{name}", HelloHandler).Methods("GET")
-	router.HandleFunc("/hello/{name}", MethodNotAllowedHandler)
-	//router.HandleFunc("/blinkts/{action}", BlinktsHandler).Methods("POST")
-	//router.HandleFunc("/blinkts/{action}", MethodNotAllowedHandler)
 	//router.HandleFunc("/blinkts/{action}/{id}", BlinktsHandler).Methods("POST")
-	//router.HandleFunc("/blinkts/{action}/{id}", MethodNotAllowedHandler)
 	//router.Handle("/blinkts/random", handlers.MethodHandler{
 	//"POST": http.HandlerFunc(BlinktsHandler),
 	//})

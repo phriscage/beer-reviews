@@ -27,7 +27,7 @@ func ResponseErrorHandler(w http.ResponseWriter, r *http.Request, code int, erro
 		log.Warn(errors)
 	}
 	responseData := &ResponseError{ResponseCore{code, http.StatusText(code)}, errors}
-	body, err := json.Marshal(responseData)
+	body, err := json.MarshalIndent(responseData, "", "    ")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -35,13 +35,14 @@ func ResponseErrorHandler(w http.ResponseWriter, r *http.Request, code int, erro
 	// Always set Headers before Writing them
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write([]byte(body))
+	// add new line to response
+	w.Write(append([]byte(body), []byte("\n")...))
 }
 
 // Custom Response Handlers with data array
 func ResponseHandler(w http.ResponseWriter, r *http.Request, code int, data map[string]interface{}) {
 	responseData := &ResponseData{ResponseCore{code, http.StatusText(code)}, data}
-	body, err := json.Marshal(responseData)
+	body, err := json.MarshalIndent(responseData, "", "    ")
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -49,7 +50,8 @@ func ResponseHandler(w http.ResponseWriter, r *http.Request, code int, data map[
 	// Always set Headers before Writing them
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(code)
-	w.Write([]byte(body))
+	// add new line to response
+	w.Write(append([]byte(body), []byte("\n")...))
 }
 
 func MethodNotAllowedHandler(w http.ResponseWriter, r *http.Request) {
