@@ -46,6 +46,7 @@ func (env *Env) ReviewsHandler(w http.ResponseWriter, r *http.Request) {
 			ResponseErrorHandler(w, r, http.StatusInternalServerError, []string{err.Error()})
 			return
 		}
+		review.Id = hit.Id
 		reviews = append(reviews, review)
 	}
 	data["reviews"] = reviews
@@ -61,7 +62,7 @@ func (env *Env) ReviewsIdHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	data := make(map[string]interface{})
-	review, err := env.client.Get().
+	indexResult, err := env.client.Get().
 		Index(elasticBeerIndex).
 		Type(elasticBeerType).
 		Id(vars["id"]).
@@ -77,9 +78,18 @@ func (env *Env) ReviewsIdHandler(w http.ResponseWriter, r *http.Request) {
 		ResponseErrorHandler(w, r, http.StatusInternalServerError, []string{err.Error()})
 		return
 	}
-	log.Debug(review)
-	if review != nil && review.Found {
-		data["review"] = review.Source
+	log.Debug(indexResult)
+	if indexResult != nil && indexResult.Found {
+		review := Review{}
+		err := json.Unmarshal(*indexResult.Source, &review)
+		if err != nil {
+			// Deserialization failed
+			log.Warn(err)
+			ResponseErrorHandler(w, r, http.StatusInternalServerError, []string{err.Error()})
+			return
+		}
+		review.Id = indexResult.Id
+		data["review"] = review
 		ResponseHandler(w, r, http.StatusOK, data)
 	} else {
 		NotFoundHandler(w, r)

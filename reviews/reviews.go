@@ -19,6 +19,7 @@ It is comprised of additional object dependencies: Beer and Reviewer.
 
 */
 type Review struct {
+	Id        string `json:"id"`
 	Text      string `json:"text,omitempty"`
 	Beer      `json:"beer"`
 	Reviewer  `json:"reviewer"`

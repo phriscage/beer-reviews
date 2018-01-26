@@ -54,6 +54,7 @@ func (env *Env) ReviewersIdReviewsHandler(w http.ResponseWriter, r *http.Request
 			ResponseErrorHandler(w, r, http.StatusInternalServerError, []string{err.Error()})
 			return
 		}
+		review.Id = hit.Id
 		reviews = append(reviews, review)
 	}
 	data["reviews"] = reviews
