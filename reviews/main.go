@@ -17,11 +17,14 @@ const (
 	elasticBeerType  = "review"
 )
 
-var (
-	elasticUrl = os.Getenv("ELASTICSEARCH_DATABASE_URI")
-	// Starting with elastic.v5, you must pass a context to execute each service
-	ctx    = context.Background()
+// Global environment struct for handling the database connection
+type Env struct {
 	client *elastic.Client
+}
+
+var (
+	// Starting with elastic.v5, you must pass a context to execute each service
+	ctx = context.Background()
 )
 
 // Init
@@ -37,17 +40,8 @@ func init() {
 	log.SetLevel(log.DebugLevel)
 }
 
-// main logic
-func main() {
-
-	log.Debugf("ELASTICSEARCH_DATABASE_URI: %s", os.Getenv("ELASTICSEARCH_DATABASE_URI"))
-	if elasticUrl == "" {
-		elasticUrl = "http://localhost:9200"
-	}
-
-	// Starting with elastic.v5, you must pass a context to execute each service
-	//ctx := context.Background()
-
+// init database for environment struct
+func initDb(elasticUrl string) (*elastic.Client, error) {
 	// Obtain a client and connect to the default Elasticsearch installation
 	c, err := elastic.NewClient(
 		elastic.SetSniff(false),
@@ -56,31 +50,42 @@ func main() {
 	)
 	if err != nil {
 		// Handle error
-		log.Fatal(err)
-		panic(err)
+		return nil, err
 	}
 	defer c.Stop()
-	client = c
 
 	// Ping the Elasticsearch server to get e.g. the version number
-	info, code, err := client.Ping(elasticUrl).Do(ctx)
+	info, code, err := c.Ping(elasticUrl).Do(ctx)
 	if err != nil {
 		// Handle error
-		log.Fatal(err)
-		panic(err)
+		return nil, err
 	}
 	log.Debugf("Elasticsearch returned with code %d and version %s\n", code, info.Version.Number)
 
 	// Getting the ES version number is quite common, so there's a shortcut
-	esversion, err := client.ElasticsearchVersion(elasticUrl)
+	esversion, err := c.ElasticsearchVersion(elasticUrl)
 	if err != nil {
 		// Handle error
-		log.Fatal(err)
-		panic(err)
+		return nil, err
 	}
 	log.Infof("Elasticsearch version %s\n", esversion)
+	return c, nil
+}
 
-	exists, err := client.IndexExists(elasticBeerIndex).Do(ctx)
+// main logic
+func main() {
+
+	elasticUrl := os.Getenv("ELASTICSEARCH_DATABASE_URI")
+	log.Debugf("ELASTICSEARCH_DATABASE_URI: %s", os.Getenv("ELASTICSEARCH_DATABASE_URI"))
+	if elasticUrl == "" {
+		elasticUrl = "http://localhost:9200"
+	}
+	c, err := initDb(elasticUrl)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	exists, err := c.IndexExists(elasticBeerIndex).Do(ctx)
 	if err != nil {
 		// Handle error
 		log.Fatal(err)
@@ -89,11 +94,12 @@ func main() {
 	if !exists {
 		// Index does not exist yet.
 		log.Infof("'%s' index does not exist yet, seeding data...", elasticBeerIndex)
-		err := seedData(client)
+		err := seedData(c)
 		if err != nil {
 			log.Fatal(err)
 		}
 	}
+	env := &Env{client: c}
 
 	// Main router logic
 	addr := flag.String("addr", ":8080", "http listen address")
@@ -101,10 +107,14 @@ func main() {
 	router := mux.NewRouter().StrictSlash(true)
 	router.HandleFunc("/sample", SampleHandler).Methods("GET")
 	router.HandleFunc("/sample", MethodNotAllowedHandler)
-	router.HandleFunc("/reviews", ReviewsHandler).Methods("GET")
+	router.HandleFunc("/reviews", env.ReviewsHandler).Methods("GET")
 	router.HandleFunc("/reviews", MethodNotAllowedHandler)
-	router.HandleFunc("/reviews/{id}", ReviewsIdHandler).Methods("GET")
+	router.HandleFunc("/reviews/{id}", env.ReviewsIdHandler).Methods("GET")
 	router.HandleFunc("/reviews/{id}", MethodNotAllowedHandler)
+	router.HandleFunc("/reviewers/{id}/reviews", env.ReviewersIdReviewsHandler).Methods("GET")
+	router.HandleFunc("/reviewers/{id}/reviews", MethodNotAllowedHandler)
+	router.HandleFunc("/beers/{id}/reviews", env.BeersIdReviewsHandler).Methods("GET")
+	router.HandleFunc("/beers/{id}/reviews", MethodNotAllowedHandler)
 	router.HandleFunc("/hello", HelloHandler).Methods("GET")
 	router.HandleFunc("/hello", MethodNotAllowedHandler)
 	//router.HandleFunc("/blinkts/{action}/{id}", BlinktsHandler).Methods("POST")

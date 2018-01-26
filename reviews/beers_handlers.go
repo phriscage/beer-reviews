@@ -11,12 +11,20 @@ import (
 	//"os"
 )
 
-// Reviews Handler returns all the reviews for a given reviewer_id
-func ReviewsHandler(w http.ResponseWriter, r *http.Request) {
+// BeersIdReviews Handler returns all the reviews for a given reviewer_id
+func (env *Env) BeersIdReviewsHandler(w http.ResponseWriter, r *http.Request) {
+	vars := mux.Vars(r)
+	log.Debug(vars)
+	if _, ok := vars["id"]; !ok {
+		NotFoundHandler(w, r)
+		return
+	}
 	data := make(map[string]interface{})
-	searchResult, err := client.Search().
+	termQuery := elastic.NewTermQuery("beer.id", vars["id"])
+	log.Debug(termQuery)
+	searchResult, err := env.client.Search().
 		Index(elasticBeerIndex).
-		//Query(termQuery).   // specify the query
+		Query(termQuery). // specify the query
 		//Sort("user", true). // sort by "user" field, ascending
 		From(0).Size(10). // take documents 0-9
 		Pretty(true).     // pretty print request and response JSON
@@ -50,39 +58,4 @@ func ReviewsHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	data["reviews"] = reviews
 	ResponseHandler(w, r, http.StatusOK, data)
-}
-
-// Reviews Handler returns all the reviews for a given reviewer_id
-func ReviewsIdHandler(w http.ResponseWriter, r *http.Request) {
-	vars := mux.Vars(r)
-	log.Debug(vars)
-	data := make(map[string]interface{})
-	if _, ok := vars["id"]; !ok {
-		NotFoundHandler(w, r)
-		return
-	}
-	review, err := client.Get().
-		Index(elasticBeerIndex).
-		Type(elasticBeerType).
-		Id(vars["id"]).
-		Do(ctx)
-	if err != nil {
-		log.Warn(err)
-		if e, ok := err.(*elastic.Error); ok {
-			if e.Status == 404 {
-				NotFoundHandler(w, r)
-				return
-			}
-		}
-		ResponseErrorHandler(w, r, http.StatusInternalServerError, []string{err.Error()})
-		return
-	}
-	log.Debug(review)
-	if review != nil && review.Found {
-		data["review"] = review.Source
-		ResponseHandler(w, r, http.StatusOK, data)
-	} else {
-		NotFoundHandler(w, r)
-		return
-	}
 }
