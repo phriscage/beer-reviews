@@ -25,7 +25,8 @@ RUN go get github.com/pilu/fresh && \
         github.com/olivere/elastic \
         github.com/gorilla/handlers \
         github.com/sirupsen/logrus \
-        github.com/gorilla/mux
+        github.com/gorilla/mux \
+        github.com/fatih/structs
 
 # Add the sample data
 COPY data /app/data

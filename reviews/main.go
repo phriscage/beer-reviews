@@ -19,7 +19,8 @@ const (
 
 // Global environment struct for handling the database connection
 type Env struct {
-	client *elastic.Client
+	client     *elastic.Client
+	elasticUrl string
 }
 
 var (
@@ -99,7 +100,7 @@ func main() {
 			log.Fatal(err)
 		}
 	}
-	env := &Env{client: c}
+	env := &Env{client: c, elasticUrl: elasticUrl}
 
 	// Main router logic
 	addr := flag.String("addr", ":8080", "http listen address")
@@ -115,8 +116,8 @@ func main() {
 	router.HandleFunc("/reviewers/{id}/reviews", MethodNotAllowedHandler)
 	router.HandleFunc("/beers/{id}/reviews", env.BeersIdReviewsHandler).Methods("GET")
 	router.HandleFunc("/beers/{id}/reviews", MethodNotAllowedHandler)
-	router.HandleFunc("/hello", HelloHandler).Methods("GET")
-	router.HandleFunc("/hello", MethodNotAllowedHandler)
+	router.HandleFunc("/health", env.HealthHandler).Methods("GET")
+	router.HandleFunc("/health", MethodNotAllowedHandler)
 	//router.HandleFunc("/blinkts/{action}/{id}", BlinktsHandler).Methods("POST")
 	//router.Handle("/blinkts/random", handlers.MethodHandler{
 	//"POST": http.HandlerFunc(BlinktsHandler),
