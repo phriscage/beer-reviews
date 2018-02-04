@@ -38,5 +38,5 @@ ENTRYPOINT ["/app/main"]
 ## final stage
 FROM alpine:3.7
 WORKDIR /app
-COPY --from=build-env /app/main /app/
+COPY --from=build-env /app /app
 ENTRYPOINT ["/app/main"]
