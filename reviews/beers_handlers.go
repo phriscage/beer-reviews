@@ -19,7 +19,6 @@ func (env *Env) BeersIdReviewsHandler(w http.ResponseWriter, r *http.Request) {
 		NotFoundHandler(w, r)
 		return
 	}
-	data := make(map[string]interface{})
 	termQuery := elastic.NewTermQuery("beer.id", vars["id"])
 	log.Debug(termQuery)
 	searchResult, err := env.client.Search().
@@ -57,6 +56,5 @@ func (env *Env) BeersIdReviewsHandler(w http.ResponseWriter, r *http.Request) {
 		review.Id = hit.Id
 		reviews = append(reviews, review)
 	}
-	data["reviews"] = reviews
-	ResponseHandler(w, r, http.StatusOK, data)
+	ResponseHandler(w, r, http.StatusOK, reviews)
 }

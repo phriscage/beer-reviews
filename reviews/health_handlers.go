@@ -52,7 +52,6 @@ func (env *Env) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	debug := vals["debug"]
 	//log.Debug(vals)
 
-	data := make(map[string]interface{})
 	// Ping the Elasticsearch server to get e.g. the version number
 	_, _, err := env.client.Ping(env.elasticUrl).Do(ctx)
 	if err != nil {
@@ -69,10 +68,10 @@ func (env *Env) HealthHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if debug != nil {
-		data = structs.Map(GetDebugInfo(r))
+		data := structs.Map(GetDebugInfo(r))
 		//log.Debug(data)
 		ResponseHandler(w, r, http.StatusOK, data)
 	} else {
-		ResponseHandler(w, r, http.StatusOK, data)
+		ResponseHandler(w, r, http.StatusOK, nil)
 	}
 }

@@ -13,7 +13,6 @@ import (
 
 // Sample Handler sends a default system response
 func SampleHandler(w http.ResponseWriter, r *http.Request) {
-	data := make(map[string]interface{})
 	host := make(map[string]interface{})
 	fqdn, err := os.Hostname()
 	host["fqdn"] = fqdn
@@ -29,8 +28,7 @@ func SampleHandler(w http.ResponseWriter, r *http.Request) {
 	//addrs, err := net.InterfaceAddrs()
 	//host["ip_address"] = addrs[len(addrs)-1].(*net.IPNet).IP // need something better
 	host["ip_address"] = addrs[len(addrs)-1] // need something better
-	data["host"] = host
-	ResponseHandler(w, r, http.StatusOK, data)
+	ResponseHandler(w, r, http.StatusOK, host)
 }
 
 // Hello Handler checks a parameter and returns the response

@@ -13,7 +13,7 @@ type ResponseCore struct {
 
 type ResponseData struct {
 	ResponseCore
-	Data map[string]interface{} `json:"data,omitempty"`
+	Data interface{} `json:"data,omitempty"`
 }
 
 type ResponseError struct {
@@ -40,7 +40,7 @@ func ResponseErrorHandler(w http.ResponseWriter, r *http.Request, code int, erro
 }
 
 // Custom Response Handlers with data array
-func ResponseHandler(w http.ResponseWriter, r *http.Request, code int, data map[string]interface{}) {
+func ResponseHandler(w http.ResponseWriter, r *http.Request, code int, data interface{}) {
 	responseData := &ResponseData{ResponseCore{code, http.StatusText(code)}, data}
 	body, err := json.MarshalIndent(responseData, "", "    ")
 	if err != nil {

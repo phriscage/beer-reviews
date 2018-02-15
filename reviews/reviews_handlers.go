@@ -13,7 +13,6 @@ import (
 
 // Reviews Handler returns all the reviews for a given reviewer_id
 func (env *Env) ReviewsHandler(w http.ResponseWriter, r *http.Request) {
-	data := make(map[string]interface{})
 	searchResult, err := env.client.Search().
 		Index(elasticBeerIndex).
 		//Query(termQuery).   // specify the query
@@ -49,8 +48,7 @@ func (env *Env) ReviewsHandler(w http.ResponseWriter, r *http.Request) {
 		review.Id = hit.Id
 		reviews = append(reviews, review)
 	}
-	data["reviews"] = reviews
-	ResponseHandler(w, r, http.StatusOK, data)
+	ResponseHandler(w, r, http.StatusOK, reviews)
 }
 
 // Reviews Handler returns all the reviews for a given reviewer_id
@@ -61,7 +59,6 @@ func (env *Env) ReviewsIdHandler(w http.ResponseWriter, r *http.Request) {
 		NotFoundHandler(w, r)
 		return
 	}
-	data := make(map[string]interface{})
 	indexResult, err := env.client.Get().
 		Index(elasticBeerIndex).
 		Type(elasticBeerType).
@@ -89,8 +86,7 @@ func (env *Env) ReviewsIdHandler(w http.ResponseWriter, r *http.Request) {
 			return
 		}
 		review.Id = indexResult.Id
-		data["review"] = review
-		ResponseHandler(w, r, http.StatusOK, data)
+		ResponseHandler(w, r, http.StatusOK, review)
 	} else {
 		NotFoundHandler(w, r)
 		return
